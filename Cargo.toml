@@ -18,9 +18,11 @@ priority = "optional"
 # It will automatically swap in the correct cross-compile target path during the build.
 assets = [
     ["target/release/kerio-connect-reindex", "usr/local/bin/", "755"],
+    ["kerio-connect-reindex.8", "usr/share/man/man8/", "644"],
 ]
 
 [package.metadata.generate-rpm]
 assets = [
     { source = "target/release/kerio-connect-reindex", dest = "/usr/local/bin/kerio-connect-reindex", mode = "755" }
+    { source = "kerio-connect-reindex.8", dest = "/usr/share/man/man8/kerio-connect-reindex.8", mode = "644", doc = true }
 ]

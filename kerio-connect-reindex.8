@@ -1,0 +1,37 @@
+.TH KERIO-CONNECT-REINDEX 8 "March 2026" "v0.1.0" "System Administration Commands"
+.SH NAME
+kerio-connect-reindex \- safely reset Kerio Connect index and search files
+.SH SYNOPSIS
+.B kerio-connect-reindex
+.SH DESCRIPTION
+.B kerio-connect-reindex
+is a highly optimized, multithreaded utility designed to fix corrupted mailboxes in Kerio Connect. It safely orchestrates the shutdown of the Kerio Connect service, aggressively searches the mail store for indexing files, and restarts the service to trigger a clean rebuild.
+.PP
+Specifically, the program performs the following steps in order:
+.IP 1. 3
+Verifies it is being executed with root privileges.
+.IP 2. 3
+Checks for the existence of the default Kerio Connect mail store.
+.IP 3. 3
+Safely stops the \fBkerio-connect.service\fR via systemd.
+.IP 4. 3
+Recursively scans the mail store and renames all instances of \fBindex.fld\fR and \fBsearch.fld\fR to \fBindex.bad\fR and \fBsearch.bad\fR using parallel execution for maximum disk I/O efficiency.
+.IP 5. 3
+Restarts the \fBkerio-connect.service\fR, allowing the system to natively rebuild the missing indexes.
+.SH OPTIONS
+This program currently takes no command-line arguments. All paths and service names are strictly compiled into the binary to prevent accidental execution against incorrect directories.
+.SH FILES
+.TP
+.I /opt/kerio/mailserver/store/mail/
+The default target directory scanned by the utility.
+.SH EXIT STATUS
+.TP
+.B 0
+Success. All files were processed and the service was successfully restarted.
+.TP
+.B 1
+Failure. This can occur if the user is not root, the target directory does not exist, or if \fBsystemctl\fR fails to stop or start the service. If the service fails to stop, the program will abort before renaming any files to prevent data corruption.
+.SH WARNINGS
+This tool modifies application data. While renaming the index files is a standard Kerio Connect troubleshooting procedure, you should always ensure you have a recent backup of your mail store before running administrative utilities.
+.SH SEE ALSO
+.BR systemctl (1)
