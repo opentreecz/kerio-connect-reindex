@@ -36,7 +36,7 @@ jobs:
         run: cargo build --release --target x86_64-unknown-linux-musl
 
       - name: Strip binary to reduce size
-        run: strip target/x86_64-unknown-linux-musl/release/kerio_reset
+        run: strip target/x86_64-unknown-linux-musl/release/kerio-connect-reindex
 
       - name: Build DEB package
         run: cargo deb --target x86_64-unknown-linux-musl --no-build
@@ -48,7 +48,7 @@ jobs:
         run: |
           mkdir -p release_artifacts
           # Copy the raw binary
-          cp target/x86_64-unknown-linux-musl/release/kerio_reset release_artifacts/kerio_reset-x86_64-linux
+          cp target/x86_64-unknown-linux-musl/release/kerio-connect-reindex release_artifacts/kerio-connect-reindex-x86_64-linux
           # Copy the generated DEB package
           cp target/x86_64-unknown-linux-musl/debian/*.deb release_artifacts/
           # Copy the generated RPM package
