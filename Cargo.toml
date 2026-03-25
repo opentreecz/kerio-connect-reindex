@@ -2,6 +2,8 @@
 name = "kerio-connect-reindex"
 version = "0.1.0"
 edition = "2024"
+license = "GPL-3.0" 
+description = "Utility to safely reindex Kerio Connect corrupted index and search files in parallel, and restart the service."
 
 [dependencies]
 rayon = "1.8"
@@ -10,7 +12,7 @@ walkdir = "2.4"
 [package.metadata.deb]
 maintainer = "opentree.cz <package@opentree.cz>"
 copyright = "2026"
-extended-description = "Utility to safely stop Kerio Connect, reset corrupted index and search files in parallel, and restart the service."
+extended-description = "Utility to safely reindex Kerio Connect corrupted index and search files in parallel, and restart the service."
 section = "utility"
 priority = "optional"
 # cargo-deb requires we use the generic "target/release/" prefix. 
