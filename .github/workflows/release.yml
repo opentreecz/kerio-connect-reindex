@@ -1,6 +1,5 @@
-name: Build and Release
+name: Build and Release Packages
 
-# This workflow triggers whenever you push a tag that starts with "v" (e.g., v1.0.0)
 on:
   push:
     tags:
@@ -8,10 +7,9 @@ on:
 
 jobs:
   build-and-release:
-    name: Build and Release x86_64
+    name: Build and Release DEB/RPM
     runs-on: ubuntu-latest
-
-    # We need permission to write to the repository's releases
+    
     permissions:
       contents: write
 
@@ -19,28 +17,47 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install musl-tools
-        # Required to compile statically linked binaries on Ubuntu
-        run: sudo apt-get update && sudo apt-get install -y musl-tools
+      - name: Install system dependencies
+        # musl-tools for static linking, rpm for the rpmbuild command
+        run: sudo apt-get update && sudo apt-get install -y musl-tools rpm
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-unknown-linux-musl
 
+      - name: Install cargo packaging tools
+        # This action installs pre-compiled cargo tools instantly, saving build minutes
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deb,cargo-generate-rpm
+
       - name: Build release binary
         run: cargo build --release --target x86_64-unknown-linux-musl
 
-      - name: Prepare binary for upload
-        run: |
-          # Rename the binary so it's clear what architecture it's for
-          mv target/x86_64-unknown-linux-musl/release/kerio_reset kerio_reset-x86_64-linux
+      - name: Strip binary to reduce size
+        run: strip target/x86_64-unknown-linux-musl/release/kerio_reset
 
-      - name: Create Release and Upload Asset
+      - name: Build DEB package
+        run: cargo deb --target x86_64-unknown-linux-musl --no-build
+
+      - name: Build RPM package
+        run: cargo generate-rpm --target x86_64-unknown-linux-musl
+
+      - name: Prepare Release Artifacts
+        run: |
+          mkdir -p release_artifacts
+          # Copy the raw binary
+          cp target/x86_64-unknown-linux-musl/release/kerio_reset release_artifacts/kerio_reset-x86_64-linux
+          # Copy the generated DEB package
+          cp target/x86_64-unknown-linux-musl/debian/*.deb release_artifacts/
+          # Copy the generated RPM package
+          cp target/x86_64-unknown-linux-musl/generate-rpm/*.rpm release_artifacts/
+
+      - name: Create Release and Upload Assets
         uses: softprops/action-gh-release@v2
         with:
-          # Automatically uses the tag name for the release version
           generate_release_notes: true
-          files: kerio_reset-x86_64-linux
+          files: release_artifacts/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

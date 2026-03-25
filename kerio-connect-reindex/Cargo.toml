@@ -6,3 +6,20 @@ edition = "2024"
 [dependencies]
 rayon = "1.8"
 walkdir = "2.4"
+
+[package.metadata.deb]
+maintainer = "opentree.cz <package@opentree.cz>"
+copyright = "2026"
+extended-description = "Utility to safely stop Kerio Connect, reset corrupted index and search files in parallel, and restart the service."
+section = "utility"
+priority = "optional"
+# Tells cargo-deb where to find the musl binary and where to put it on the Debian system
+assets = [
+    ["target/x86_64-unknown-linux-musl/release/kerio-connect-reindex", "usr/local/bin/", "755"],
+]
+
+[package.metadata.generate-rpm]
+# Tells cargo-generate-rpm where to find the binary and where to put it on the Red Hat system
+assets = [
+    { source = "target/x86_64-unknown-linux-musl/release/kerio-connect-reindex", dest = "/usr/local/bin/kerio-connect-reindex", mode = "755" }
+]
