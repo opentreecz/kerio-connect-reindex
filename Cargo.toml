@@ -1,6 +1,6 @@
 [package]
 name = "kerio-connect-reindex"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 license = "GPL-3.0" 
 description = "Utility to safely reindex Kerio Connect corrupted index and search files in parallel, and restart the service."
@@ -19,10 +19,26 @@ priority = "optional"
 assets = [
     ["target/release/kerio-connect-reindex", "usr/local/bin/", "755"],
     ["kerio-connect-reindex.8", "usr/share/man/man8/", "644"],
+    ["kerio-connect-reindex.service", "lib/systemd/system/", "644"],
+    ["kerio-connect-reindex.timer", "lib/systemd/system/", "644"],
 ]
 
 [package.metadata.generate-rpm]
+post_install_script = '''
+if [ -d /run/systemd/system ]; then
+    systemctl daemon-reload
+    systemctl enable --now kerio-connect-reindex.timer || true
+fi
+'''
+# Note: RPM passes $1 as '0' when the package is being completely removed
+pre_uninstall_script = '''
+if [ "$1" = "0" ] && [ -d /run/systemd/system ]; then
+    systemctl disable --now kerio-connect-reindex.timer || true
+fi
+'''
 assets = [
-    { source = "target/release/kerio-connect-reindex", dest = "/usr/local/bin/kerio-connect-reindex", mode = "755" }
-    { source = "kerio-connect-reindex.8", dest = "/usr/share/man/man8/kerio-connect-reindex.8", mode = "644", doc = true }
+    { source = "target/release/kerio-connect-reindex", dest = "/usr/local/bin/kerio-connect-reindex", mode = "755" },
+    { source = "kerio-connect-reindex.8", dest = "/usr/share/man/man8/kerio-connect-reindex.8", mode = "644", doc = true },
+    { source = "kerio-connect-reindex.service", dest = "/lib/systemd/system/kerio-connect-reindex.service", mode = "644" },
+    { source = "kerio-connect-reindex.timer", dest = "/lib/systemd/system/kerio-connect-reindex.timer", mode = "644" }
 ]

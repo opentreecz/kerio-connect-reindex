@@ -1,4 +1,4 @@
-.TH KERIO-CONNECT-REINDEX 8 "March 2026" "v0.1.0" "System Administration Commands"
+.TH KERIO-CONNECT-REINDEX 8 "March 2026" "v0.1.1" "System Administration Commands"
 .SH NAME
 kerio-connect-reindex \- safely reset Kerio Connect index and search files
 .SH SYNOPSIS
@@ -18,12 +18,51 @@ Safely stops the \fBkerio-connect.service\fR via systemd.
 Recursively scans the mail store and renames all instances of \fBindex.fld\fR and \fBsearch.fld\fR to \fBindex.bad\fR and \fBsearch.bad\fR using parallel execution for maximum disk I/O efficiency.
 .IP 5. 3
 Restarts the \fBkerio-connect.service\fR, allowing the system to natively rebuild the missing indexes.
+.SH AUTOMATION AND TIMER
+When installed via the provided DEB or RPM packages, this utility automatically configures and enables a systemd timer (\fBkerio-connect-reindex.timer\fR) to run in the background.
+.PP
+.B Schedule:
+The timer is scheduled to run every 2 months (on the 1st day of January, March, May, July, September, and November at 02:00 AM local time). If the server is offline at the scheduled time, the task will run immediately upon the next boot.
+.PP
+.B Checking Timer Status:
+To verify when the script last ran and when it is next scheduled, use:
+.PP
+.RS 4
+systemctl list-timers | grep kerio
+.RE
+.PP
+.B Viewing Logs:
+The output of the automated background runs is logged to the system journal. You can view the history by running:
+.PP
+.RS 4
+journalctl -u kerio-connect-reindex.service
+.RE
+.PP
+.B Manual Execution via Systemd:
+You can manually trigger the background service outside of its normal schedule at any time by running:
+.PP
+.RS 4
+systemctl start kerio-connect-reindex.service
+.RE
+.PP
+.B Disabling Automation:
+If you prefer to only run the tool manually and want to disable the schedule, execute:
+.PP
+.RS 4
+systemctl disable --now kerio-connect-reindex.timer
+.RE
 .SH OPTIONS
 This program currently takes no command-line arguments. All paths and service names are strictly compiled into the binary to prevent accidental execution against incorrect directories.
 .SH FILES
 .TP
 .I /opt/kerio/mailserver/store/mail/
 The default target directory scanned by the utility.
+.TP
+.I /lib/systemd/system/kerio-connect-reindex.service
+The systemd service unit.
+.TP
+.I /lib/systemd/system/kerio-connect-reindex.timer
+The systemd timer unit controlling the bi-monthly schedule.
 .SH EXIT STATUS
 .TP
 .B 0
@@ -34,4 +73,5 @@ Failure. This can occur if the user is not root, the target directory does not e
 .SH WARNINGS
 This tool modifies application data. While renaming the index files is a standard Kerio Connect troubleshooting procedure, you should always ensure you have a recent backup of your mail store before running administrative utilities.
 .SH SEE ALSO
-.BR systemctl (1)
+.BR systemctl (1),
+.BR journalctl (1)

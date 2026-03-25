@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Kerio Connect Index Reset every 2 months
+
+[Timer]
+# Runs on the 1st day of every 2nd month (Jan, Mar, May, etc.) at 2:00 AM
+OnCalendar=*-01/2-01 02:00:00
+# If the server is offline at 2:00 AM, run it immediately on the next boot
+Persistent=true
+
+[Install]
+WantedBy=timers.target
