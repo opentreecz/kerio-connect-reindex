@@ -12,7 +12,6 @@ walkdir = "2.4"
 [package.metadata.deb]
 maintainer = "opentree.cz <package@opentree.cz>"
 copyright = "2026"
-extended-description = "Utility to safely reindex Kerio Connect corrupted index and search files in parallel, and restart the service."
 section = "utility"
 priority = "optional"
 # cargo-deb requires we use the generic "target/release/" prefix. 
